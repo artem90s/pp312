@@ -1,6 +1,8 @@
 package ru.kata.spring.boot_security.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,24 +16,23 @@ import ru.kata.spring.boot_security.demo.repository.UserRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import javax.transaction.Transactional;
+import java.util.*;
 
 @Service
+@Transactional
 public class UserService implements UserDetailsService {
     @PersistenceContext
     private EntityManager em;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    RoleRepository roleRepository;
-    @Autowired
-    PasswordEncoder bCryptPasswordEncoder;
+    final UserRepository userRepository;
+    final RoleRepository roleRepository;
+    final PasswordEncoder bCryptPasswordEncoder;
 
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
     public User findByUsername (String username){
         return userRepository.findByUsername(username);
@@ -39,12 +40,14 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = findByUsername(username);
+        User user = userRepository.findByUsername(username);
         if(user==null){
             throw new UsernameNotFoundException(String.format("Пользователь '%s' не найден",username));
         }
+        user.getAuthorities().size();
         return user;
     }
+
 
     public List<User> allUsers(){
         return userRepository.findAll();
@@ -59,7 +62,6 @@ public class UserService implements UserDetailsService {
         if (userFromDB != null) {
             return false;
         }
-        user.setRoles(Collections.singleton(new Role(1L, "ROLE_USER")));
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         userRepository.save(user);
         return true;
@@ -72,5 +74,11 @@ public class UserService implements UserDetailsService {
         }
         return false;
     }
+
+//    private static Collection<? extends GrantedAuthority> getAuthorities(User user){
+//        String[] userRoles=user.getRoles().stream().map((role) -> role.getName()).toArray(String[]::new);
+//        Collection<GrantedAuthority> authorityCollections = AuthorityUtils.createAuthorityList(userRoles);
+//        return authorityCollections;
+//    }
 
 }

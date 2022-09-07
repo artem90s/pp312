@@ -1,8 +1,11 @@
 package ru.kata.spring.boot_security.demo.entity;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 
 import javax.persistence.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -11,9 +14,12 @@ public class Role implements GrantedAuthority {
     @Id
     private Long id;
     private String name;
-    @Transient
-    @ManyToMany(mappedBy = "roles")
-    private Set<User> users;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable (name = "users_roles",
+            joinColumns = @JoinColumn (name = "roles_id"),
+            inverseJoinColumns = @JoinColumn (name = "user_id") )
+    private List<User> users;
     public Role() {
     }
 
@@ -42,11 +48,11 @@ public class Role implements GrantedAuthority {
         this.name = name;
     }
 
-    public Set<User> getUsers() {
+    public List<User> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<User> users) {
+    public void setUsers(List<User> users) {
         this.users = users;
     }
 
