@@ -11,9 +11,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@NamedEntityGraphs(value = {@NamedEntityGraph(name = User.ROLE, attributeNodes = @NamedAttributeNode("roles"))})
 public class User implements UserDetails {
-    public static final String ROLE = "User[roles]";
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
