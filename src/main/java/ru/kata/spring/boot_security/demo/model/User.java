@@ -1,4 +1,4 @@
-package ru.kata.spring.boot_security.demo.entity;
+package ru.kata.spring.boot_security.demo.model;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,7 +11,9 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
+@NamedEntityGraphs(value = {@NamedEntityGraph(name = User.ROLE, attributeNodes = @NamedAttributeNode("roles"))})
 public class User implements UserDetails {
+    public static final String ROLE = "User[roles]";
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,7 +28,7 @@ public class User implements UserDetails {
             joinColumns = @JoinColumn (name = "user_id"),
             inverseJoinColumns = @JoinColumn (name = "roles_id")
     )
-    private List<Role> roles;
+    private Set<Role> roles;
 
     public User() {
     }
@@ -90,11 +92,11 @@ public class User implements UserDetails {
         this.passwordConfirm = passwordConfirm;
     }
 
-    public List<Role> getRoles() {
+    public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<Role> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 }

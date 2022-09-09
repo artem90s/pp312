@@ -4,8 +4,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.kata.spring.boot_security.demo.entity.User;
-import ru.kata.spring.boot_security.demo.service.UserService;
+import ru.kata.spring.boot_security.demo.model.User;
+import ru.kata.spring.boot_security.demo.service.UserServiceImpl;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -13,15 +13,15 @@ import java.util.List;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
-    public AdminController(UserService userService) {
-        this.userService = userService;
+    public AdminController(UserServiceImpl userServiceImpl) {
+        this.userServiceImpl = userServiceImpl;
     }
 
     @GetMapping
     public String adminView(Model model) {
-        List<User> userList = userService.allUsers();
+        List<User> userList = userServiceImpl.usersList();
         model.addAttribute("users", userList);
         return "admin";
     }
@@ -36,12 +36,12 @@ public class AdminController {
         if(bindingResult.hasErrors()){
             return "new";
         }
-        userService.saveUser(user);
+        userServiceImpl.saveUser(user);
         return "redirect:/admin";
     }
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable("id")Long id, Model model){
-        model.addAttribute("user", userService.findUserById(id));
+        model.addAttribute("user", userServiceImpl.getUser(id));
         return "edit";
     }
 
@@ -50,12 +50,12 @@ public class AdminController {
         if(bindingResult.hasErrors()){
             return "edit";
         }
-        userService.saveUser(user);
+        userServiceImpl.saveUser(user);
         return "redirect:/admin";
     }
     @DeleteMapping("/{id}")
     public String delete(@ModelAttribute ("user") User user){
-        userService.deleteUser(user.getId());
+        userServiceImpl.deleteUser(user);
         return "redirect:/admin";
 
     }
